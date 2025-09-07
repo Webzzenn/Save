@@ -1,0 +1,68 @@
+(function(S) {
+  let k = '';
+  const t = Object.create(null);
+  const hasOwn = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
+
+  // Debug log to check if extension is being registered
+  console.log('Registering lastKeyTime extension');
+
+  // Listen for key presses
+  document.addEventListener('keydown', e => {
+    k = e.key.length > 1 ? e.key : e.key.toLowerCase();
+  });
+
+  class L {
+    getInfo() {
+      return {
+        id: 'lastKeyTime',
+        name: 'Last Key & Time',
+        color1: '#3498db',
+        blocks: [
+          { opcode: 'getLastKeyPressed', blockType: S.BlockType.REPORTER, text: 'get last key pressed' },
+          { opcode: 'recordTimestamp', blockType: S.BlockType.REPORTER, text: 'record timestamp with id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
+          { opcode: 'getSecondsSinceTimestamp', blockType: S.BlockType.REPORTER, text: 'seconds elapsed since timestamp id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
+          { opcode: 'isElapsedGreaterThan', blockType: S.BlockType.BOOLEAN, text: 'has time since id [ID] exceeded [SECONDS] seconds?', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' }, SECONDS: { type: S.ArgumentType.NUMBER, defaultValue: 0 } } },
+          { opcode: 'doesTimestampExist', blockType: S.BlockType.BOOLEAN, text: 'does timestamp exist for id [ID]?', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
+          { opcode: 'removeTimestamp', blockType: S.BlockType.COMMAND, text: 'remove timestamp for id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
+          { opcode: 'getAllTimestampIDs', blockType: S.BlockType.REPORTER, text: 'get list of all timestamp ids' },
+          { opcode: 'clearAllTimestamps', blockType: S.BlockType.COMMAND, text: 'clear all timestamps' }
+        ]
+      };
+    }
+
+    getLastKeyPressed() {
+      return k;
+    }
+
+    recordTimestamp({ ID }) {
+      t[ID] = Date.now();
+      return 0;
+    }
+
+    getSecondsSinceTimestamp({ ID }) {
+      return t[ID] ? +(((Date.now() - t[ID]) / 1000).toFixed(5)) : 0;
+    }
+
+    isElapsedGreaterThan({ ID, SECONDS }) {
+      return t[ID] && ((Date.now() - t[ID]) / 1000) > SECONDS;
+    }
+
+    doesTimestampExist({ ID }) {
+      return hasOwn(t, ID);
+    }
+
+    removeTimestamp({ ID }) {
+      delete t[ID];
+    }
+
+    getAllTimestampIDs() {
+      return Object.keys(t);
+    }
+
+    clearAllTimestamps() {
+      for (const i in t) delete t[i];
+    }
+  }
+
+  S.extensions.register(new L());
+})(Scratch);
