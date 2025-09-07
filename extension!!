@@ -17,7 +17,7 @@
       return {
         id: 'summerznsUtil',
         name: "Summerzn's Utilities",
-        color1: '#b57edc', // Lavender
+        color1: '#b57edc',
         color2: '#a96bcf',
         color3: '#9c5fbe',
 
@@ -32,7 +32,7 @@
           },
 
           // --- TIMESTAMPS CATEGORY ---
-          { blockType: Scratch.BlockType.LABEL, text: '⏱Timestamps' },
+          { blockType: Scratch.BlockType.LABEL, text: 'Timestamps' },
 
           {
             opcode: 'getSecondsSinceTimestamp',
@@ -87,7 +87,7 @@
           },
 
           // --- VECTOR UTILITIES CATEGORY ---
-          { blockType: Scratch.BlockType.LABEL, text: '📐 Vector Utilities' },
+          { blockType: Scratch.BlockType.LABEL, text: 'Vector Utilities' },
 
           {
             opcode: 'getNormalizeMultiplier',
@@ -144,7 +144,7 @@
       }
     }
 
-    // --- VECTOR UTILS ---
+    // --- VECTOR UTILITIES ---
     getNormalizeMultiplier({ X, Y }) {
       const x = parseFloat(X);
       const y = parseFloat(Y);
@@ -155,4 +155,5 @@
   }
 
   Scratch.extensions.register(new SummerznsUtil());
+
 })(Scratch);
