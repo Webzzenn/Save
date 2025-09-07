@@ -1,68 +1,134 @@
-(function(S) {
-  let k = '';
-  const t = Object.create(null);
+(function (Scratch) {
+  "use strict";
+
+  let lastKey = '';
+  const timestamps = Object.create(null);
   const hasOwn = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop);
 
-  // Debug log to check if extension is being registered
-  console.log('Registering lastKeyTime extension');
-
-  // Listen for key presses
+  // Listen for key presses and store last key pressed (lowercase single chars)
   document.addEventListener('keydown', e => {
-    k = e.key.length > 1 ? e.key : e.key.toLowerCase();
+    lastKey = e.key.length === 1 ? e.key.toLowerCase() : e.key;
   });
 
-  class L {
+  class LastKeyTime {
+    constructor() {}
+
     getInfo() {
       return {
         id: 'lastKeyTime',
         name: 'Last Key & Time',
         color1: '#3498db',
+
         blocks: [
-          { opcode: 'getLastKeyPressed', blockType: S.BlockType.REPORTER, text: 'get last key pressed' },
-          { opcode: 'recordTimestamp', blockType: S.BlockType.REPORTER, text: 'record timestamp with id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
-          { opcode: 'getSecondsSinceTimestamp', blockType: S.BlockType.REPORTER, text: 'seconds elapsed since timestamp id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
-          { opcode: 'isElapsedGreaterThan', blockType: S.BlockType.BOOLEAN, text: 'has time since id [ID] exceeded [SECONDS] seconds?', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' }, SECONDS: { type: S.ArgumentType.NUMBER, defaultValue: 0 } } },
-          { opcode: 'doesTimestampExist', blockType: S.BlockType.BOOLEAN, text: 'does timestamp exist for id [ID]?', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
-          { opcode: 'removeTimestamp', blockType: S.BlockType.COMMAND, text: 'remove timestamp for id [ID]', arguments: { ID: { type: S.ArgumentType.STRING, defaultValue: '1' } } },
-          { opcode: 'getAllTimestampIDs', blockType: S.BlockType.REPORTER, text: 'get list of all timestamp ids' },
-          { opcode: 'clearAllTimestamps', blockType: S.BlockType.COMMAND, text: 'clear all timestamps' }
+          // INPUT CATEGORY LABEL
+          { blockType: Scratch.BlockType.LABEL, text: 'Input' },
+
+          {
+            opcode: 'getLastKeyPressed',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get last key pressed'
+          },
+
+          // TIMESTAMP CATEGORY LABEL
+          { blockType: Scratch.BlockType.LABEL, text: 'Timestamps' },
+
+          {
+            opcode: 'recordTimestamp',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'record timestamp with id [ID]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
+            }
+          },
+          {
+            opcode: 'getSecondsSinceTimestamp',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'seconds elapsed since timestamp id [ID]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
+            }
+          },
+          {
+            opcode: 'isElapsedGreaterThan',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'has time since id [ID] exceeded [SECONDS] seconds?',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' },
+              SECONDS: { type: Scratch.ArgumentType.NUMBER, defaultValue: 0 }
+            }
+          },
+          {
+            opcode: 'doesTimestampExist',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'does timestamp exist for id [ID]?',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
+            }
+          },
+          {
+            opcode: 'removeTimestamp',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'remove timestamp for id [ID]',
+            arguments: {
+              ID: { type: Scratch.ArgumentType.STRING, defaultValue: '1' }
+            }
+          },
+          {
+            opcode: 'getAllTimestampIDs',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'get list of all timestamp ids'
+          },
+          {
+            opcode: 'clearAllTimestamps',
+            blockType: Scratch.BlockType.COMMAND,
+            text: 'clear all timestamps'
+          }
         ]
       };
     }
 
+    // Input block implementation
     getLastKeyPressed() {
-      return k;
+      return lastKey;
     }
 
+    // Timestamp block implementations
     recordTimestamp({ ID }) {
-      t[ID] = Date.now();
-      return 0;
+      timestamps[ID] = Date.now();
     }
 
     getSecondsSinceTimestamp({ ID }) {
-      return t[ID] ? +(((Date.now() - t[ID]) / 1000).toFixed(5)) : 0;
+      if (timestamps[ID]) {
+        return +(((Date.now() - timestamps[ID]) / 1000).toFixed(5));
+      }
+      return 0;
     }
 
     isElapsedGreaterThan({ ID, SECONDS }) {
-      return t[ID] && ((Date.now() - t[ID]) / 1000) > SECONDS;
+      if (timestamps[ID]) {
+        return ((Date.now() - timestamps[ID]) / 1000) > SECONDS;
+      }
+      return false;
     }
 
     doesTimestampExist({ ID }) {
-      return hasOwn(t, ID);
+      return hasOwn(timestamps, ID);
     }
 
     removeTimestamp({ ID }) {
-      delete t[ID];
+      delete timestamps[ID];
     }
 
     getAllTimestampIDs() {
-      return Object.keys(t);
+      return JSON.stringify(Object.keys(timestamps));
     }
 
     clearAllTimestamps() {
-      for (const i in t) delete t[i];
+      for (const key in timestamps) {
+        delete timestamps[key];
+      }
     }
   }
 
-  S.extensions.register(new L());
+  Scratch.extensions.register(new LastKeyTime());
 })(Scratch);
